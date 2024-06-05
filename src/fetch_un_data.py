@@ -13,7 +13,7 @@ import argparse
 import urllib3
 import ssl
 import requests
-from .constants import START_YEAR, END_YEAR, COUNTRY_DICT, SERIES_DICT
+from constants import START_YEAR, END_YEAR, COUNTRY_DICT, SERIES_DICT
 
 
 UN_COUNTRY_CODE = "840"  # UN code for USA
@@ -36,7 +36,7 @@ def get_un_data(
     country_id=UN_COUNTRY_CODE,
     start_year=START_YEAR,
     end_year=END_YEAR,
-    un_token=un_token,
+    un_token=None,
 ):
     """
     This function retrieves data from the United Nations Data Portal API
@@ -126,7 +126,7 @@ def get_legacy_session():
 def fetch_country_data(
     initial_data_year=START_YEAR,
     final_data_year=END_YEAR,
-    un_token=un_token,
+    un_token=None,
 ):
     """
     This function downloads and save data for each country
