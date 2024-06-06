@@ -67,7 +67,7 @@ def get_un_data(
 
     # get data from url
     payload = {}
-    headers = {"Authorization": "Bearer "  + un_token}
+    headers = {"Authorization": "Bearer " + un_token}
     response = get_legacy_session().get(target, headers=headers, data=payload)
     # Check if the request was successful before processing
     if response.status_code == 200:
@@ -167,3 +167,4 @@ if __name__ == "__main__":
     parser.add_argument("token", help="UN WPP API token")  # positional arg
 
     fetch_country_data(un_token=parser.parse_args().token)
+    print("Data fetched successfully. See ouput in the 'Data' directory.")
