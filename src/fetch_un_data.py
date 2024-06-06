@@ -67,7 +67,7 @@ def get_un_data(
 
     # get data from url
     payload = {}
-    headers = {"Authorization": un_token}
+    headers = {"Authorization": "Bearer "  + un_token}
     response = get_legacy_session().get(target, headers=headers, data=payload)
     # Check if the request was successful before processing
     if response.status_code == 200:
