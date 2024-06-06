@@ -143,6 +143,7 @@ def fetch_country_data(
     # Loop over countries
     for k, v in COUNTRY_DICT.items():
         # Loop over population series to grab
+        print("Downloading data for {c}".format(c=k))
         for kk, vv in SERIES_DICT.items():
             # download data
             df = get_un_data(
