@@ -8,7 +8,7 @@ COUNTRY_DICT = {
 
 SERIES_DICT = {
     "fertility_rates": "68",
-    "mortality rates": "80",
+    "mortality_rates": "80",
     "population": "47",
 }
 
