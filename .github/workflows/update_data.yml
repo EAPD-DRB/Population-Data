@@ -1,7 +1,7 @@
 name: Update UN population data
 on:
   schedule:
-    - cron: "7 1 15 1,5,9 *"
+    - cron: "7 1 1, 15 1,5,8,10,11 *"
   push:
     branches:
       - main
@@ -11,10 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Miniconda
-        uses: conda-incubator/setup-miniconda@v2.0.1
+        uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: undata-env
           environment-file: environment.yml
@@ -27,15 +29,26 @@ jobs:
         run: |
           python fetch_un_data.py ${{ secrets.UN_API_TOKEN }}
 
-      - name: Commit new changes and update tag
-        working-directory: ./
-        shell: bash -l {0}
+      - name: Check for changes
+        id: verify-changed-files
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
 
-          git add -A
-          git commit --allow-empty -m "Update UN data on on $(date +'%Y-%m-%d')"
+      - name: Commit and push changes
+        if: steps.verify-changed-files.outputs.changed == 'true'
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add .
+          git commit -m "Update UN data on $(date +'%Y-%m-%d')"
           git push
 
-          git tag -a $(date +'%Y-%m-%d') -m "Update UN data on $(date +'%Y-%m-%d')"
+          # Create and push tag
+          TAG_NAME="data-update-$(date +'%Y-%m-%d-%H%M%S')"
+          git tag -a "$TAG_NAME" -m "Update UN data on $(date +'%Y-%m-%d')"
+          git push origin "$TAG_NAME"
