@@ -7,6 +7,8 @@ COUNTRY_DICT = {
     "IDN": "360",
     "PHL": "608",
     "KOR": "410",
+    "THA": "764",
+    "BRA": "076",
 }
 
 SERIES_DICT = {
