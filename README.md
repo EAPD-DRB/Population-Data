@@ -15,3 +15,4 @@ python fetch_un_data.py <your_token_here>
 Note that you will just enter the value of the token and not also `Bearer '.
 
 If you do not have a token, please contact the United Nations World Populations Prospect team to request one.  The token is free and is required to access the data.
+You can request the token by sending an email to population [at] un [.org] with the subject 'Data Portal Token Request'
