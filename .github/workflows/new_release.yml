@@ -1,11 +1,9 @@
 name: New Release
 on:
-    push:
-      branches:
-        - main
-      # Sequence of patterns matched against refs/tags
-      tags:
-        - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+  push:
+    # Only trigger on tag pushes
+    tags:
+      - 'data-*' # Push events to matching data-*, i.e. data-v1.0, data-v20.15.10
 
 jobs:
   build:
@@ -13,16 +11,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
+
     - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        body: |
-          New UN data release, date data was fetched: $(date +'%Y-%m-%d')
-        draft: false
-        prerelease: false
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Extract tag name from the ref
+        TAG_NAME=${GITHUB_REF#refs/tags/}
+
+        # Get current date
+        CURRENT_DATE=$(date +'%Y-%m-%d')
+
+        # Create the release
+        gh release create "$TAG_NAME" \
+          --title "Release $TAG_NAME" \
+          --notes "New UN data release, date data was fetched: $CURRENT_DATE" \
+          --latest
