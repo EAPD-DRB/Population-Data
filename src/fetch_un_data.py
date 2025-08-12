@@ -168,4 +168,4 @@ if __name__ == "__main__":
     parser.add_argument("token", help="UN WPP API token")  # positional arg
 
     fetch_country_data(un_token=parser.parse_args().token)
-    print("Data fetched successfully. See ouput in the 'Data' directory.")
+    print("Data fetched successfully. See output in the 'Data' directory.")
