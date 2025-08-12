@@ -1,0 +1,7 @@
+name: undata-env
+dependencies:
+  - python<3.12
+  - pandas>=1.2.5
+  - requests
+  - black>=24.1.1
+  - python=3.11
