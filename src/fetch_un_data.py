@@ -82,7 +82,11 @@ def get_un_data(
             axis=1,
             inplace=True,
         )
-        df.loc[df.age == "100+", "age"] = 100
+        # AgeLabel comes back as int when the series has no "100+" category
+        # (e.g. fertility) and as str when it does.  Normalize to str before
+        # dropping the suffix so the cast holds under pandas 2 and 3 alike --
+        # pandas >=3 rejects assigning a value of the wrong dtype either way.
+        df.age = df.age.astype(str).str.replace("+", "", regex=False)
         df.age = df.age.astype(int)
         df.year = df.year.astype(int)
         df = df[df.age < 100]  # need to drop 100+ age category
