@@ -15,7 +15,6 @@ import ssl
 import requests
 from constants import START_YEAR, END_YEAR, COUNTRY_DICT, SERIES_DICT
 
-
 UN_COUNTRY_CODE = "840"  # UN code for USA
 # create output director for figures
 CUR_PATH = os.path.split(os.path.abspath(__file__))[0]
