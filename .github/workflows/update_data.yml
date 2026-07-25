@@ -1,11 +1,14 @@
 name: Update UN population data
 on:
-  # Runs on the 1st and 15th of every month.  Do not widen these gaps
-  # past 60 days: GitHub disables scheduled workflows in public repos
-  # after 60 days of inactivity, which is what silently stopped the
-  # updates between January and July 2026.
+  # Monthly on purpose: the UN revises this data rarely, so the schedule
+  # exists mainly to keep the workflow from being switched off.  GitHub
+  # disables scheduled workflows in public repos after 60 days of
+  # inactivity, which is what silently stopped the updates between
+  # January and July 2026.  A monthly run leaves ~31 days between fires,
+  # about half the limit.  Do not stretch this to every other month --
+  # that lands on 59-62 days and would sit right on the cutoff.
   schedule:
-    - cron: "7 1 1,15 * *"
+    - cron: "7 1 1 * *"
   push:
     branches:
       - main
