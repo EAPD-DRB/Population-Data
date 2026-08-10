@@ -1,10 +1,22 @@
 name: Update UN population data
 on:
+  # Monthly on purpose: the UN revises this data rarely, so the schedule
+  # exists mainly to keep the workflow from being switched off.  GitHub
+  # disables scheduled workflows in public repos after 60 days of
+  # inactivity, which is what silently stopped the updates between
+  # January and July 2026.  A monthly run leaves ~31 days between fires,
+  # about half the limit.  Do not stretch this to every other month --
+  # that lands on 59-62 days and would sit right on the cutoff.
   schedule:
-    - cron: "7 1 1,15 1,5,8,10,11 ?"
+    - cron: "7 1 1 * *"
   push:
     branches:
       - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
 
 jobs:
   build_catalog:
@@ -14,6 +26,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Fails fast on an expired token, and warns while there is still
+      # time to request a replacement.  UN tokens last one year.
+      - name: Check API token expiry
+        env:
+          UN_API_TOKEN: ${{ secrets.UN_API_TOKEN }}
+        run: python3 .github/scripts/check_token_expiry.py
 
       - name: Setup Miniconda
         uses: conda-incubator/setup-miniconda@v3
@@ -52,3 +71,28 @@ jobs:
           TAG_NAME="data-update-$(date +'%Y-%m-%d-%H%M%S')"
           git tag -a "$TAG_NAME" -m "Update UN data on $(date +'%Y-%m-%d')"
           git push origin "$TAG_NAME"
+
+      # Without this a failed scheduled run is invisible until someone
+      # notices the data has gone stale.
+      - name: Report failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          TITLE="Scheduled UN data update is failing"
+          BODY="The \`${{ github.workflow }}\` workflow failed on \
+          $(date +'%Y-%m-%d'). Run log: $RUN_URL
+
+          If the token has expired, request a new one from \
+          population@un.org and update the \`UN_API_TOKEN\` secret."
+
+          # Comment on the existing report rather than opening a new
+          # issue every run.
+          EXISTING=$(gh issue list --state open --search "$TITLE in:title" \
+            --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --body "$BODY"
+          else
+            gh issue create --title "$TITLE" --body "$BODY"
+          fi

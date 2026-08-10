@@ -7,6 +7,7 @@ model
 
 # Import packages
 import os
+import time
 import pandas as pd
 from io import StringIO
 import argparse
@@ -67,7 +68,7 @@ def get_un_data(
     # get data from url
     payload = {}
     headers = {"Authorization": "Bearer " + un_token}
-    response = get_legacy_session().get(target, headers=headers, data=payload)
+    response = get_with_retries(target, headers, payload)
     # Check if the request was successful before processing
     if response.status_code == 200:
         csvStringIO = StringIO(response.text)
@@ -124,6 +125,54 @@ def get_legacy_session():
     session = requests.session()
     session.mount("https://", CustomHttpAdapter(ctx))
     return session
+
+
+def get_with_retries(target, headers, payload, max_attempts=5):
+    """
+    This function GETs a URL, retrying on transient failures.  The UN
+    Data Portal intermittently returns 5xx on the larger requests, and a
+    single blip would otherwise abandon a whole run.  Responses the
+    server is unlikely to change its mind about (2xx, 4xx) are returned
+    on the first try.
+
+    Args:
+        target (str): URL to request
+        headers (dict): request headers
+        payload (dict): request body
+        max_attempts (int): number of times to try before giving up
+
+    Returns:
+        response (requests.Response): the last response received
+    """
+    response = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            response = get_legacy_session().get(
+                target, headers=headers, data=payload
+            )
+            if response.status_code < 500:
+                return response
+            problem = "HTTP status code: {c}".format(c=response.status_code)
+        except requests.exceptions.RequestException as err:
+            problem = type(err).__name__
+
+        if attempt < max_attempts:
+            delay = 10 * attempt
+            print(
+                "  {p}, retrying in {d}s (attempt {a} of {m})".format(
+                    p=problem, d=delay, a=attempt, m=max_attempts
+                )
+            )
+            time.sleep(delay)
+
+    if response is None:
+        raise requests.exceptions.RequestException(
+            "No response from {t} after {m} attempts".format(
+                t=target, m=max_attempts
+            )
+        )
+
+    return response
 
 
 def fetch_country_data(
