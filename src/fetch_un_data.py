@@ -67,6 +67,13 @@ def get_un_data(
 
     # get data from url
     payload = {}
+    # The token may be stored with or without its "Bearer " prefix.  Strip it
+    # if present so the header is not doubled into "Bearer Bearer <token>",
+    # which the API rejects with a 401.  check_token_expiry.py accepts both
+    # forms already, so the same UN_API_TOKEN secret works for either.
+    un_token = un_token.strip()
+    if un_token.lower().startswith("bearer "):
+        un_token = un_token[len("bearer ") :].strip()
     headers = {"Authorization": "Bearer " + un_token}
     response = get_with_retries(target, headers, payload)
     # Check if the request was successful before processing
