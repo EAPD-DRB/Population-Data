@@ -11,6 +11,7 @@ COUNTRY_DICT = {
     "BRA": "076",
     "ETH": "231",
     "FJI": "242",
+    "JPN": "392",
 }
 
 SERIES_DICT = {
