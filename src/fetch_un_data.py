@@ -15,6 +15,7 @@ import urllib3
 import ssl
 import requests
 from constants import START_YEAR, END_YEAR, COUNTRY_DICT, SERIES_DICT
+from un_token import normalize
 
 UN_COUNTRY_CODE = "840"  # UN code for USA
 # create output director for figures
@@ -67,12 +68,9 @@ def get_un_data(
 
     # get data from url
     payload = {}
-    # Accept a token with or without a leading "Bearer ", so the header is
-    # not doubled into "Bearer Bearer <token>".
-    un_token = (un_token or "").strip()
-    if un_token.lower().startswith("bearer "):
-        un_token = un_token[len("bearer ") :].strip()
-    headers = {"Authorization": "Bearer " + un_token}
+    # normalize() accepts the token however it was pasted, so the header
+    # is not doubled into "Bearer Bearer <token>".
+    headers = {"Authorization": "Bearer " + normalize(un_token)}
     response = get_with_retries(target, headers, payload)
     # Check if the request was successful before processing
     if response.status_code == 200:
@@ -235,8 +233,8 @@ if __name__ == "__main__":
             "variable"
         ),
     )
-    un_token = parser.parse_args().token
-    if not un_token.strip():
+    un_token = normalize(parser.parse_args().token)
+    if not un_token:
         parser.error(
             "no UN WPP API token given. Pass one as an argument or set "
             "UN_API_TOKEN."
