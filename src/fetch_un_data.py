@@ -15,6 +15,7 @@ import urllib3
 import ssl
 import requests
 from constants import START_YEAR, END_YEAR, COUNTRY_DICT, SERIES_DICT
+from un_token import normalize
 
 UN_COUNTRY_CODE = "840"  # UN code for USA
 # create output director for figures
@@ -67,7 +68,9 @@ def get_un_data(
 
     # get data from url
     payload = {}
-    headers = {"Authorization": "Bearer " + un_token}
+    # normalize() accepts the token however it was pasted, so the header
+    # is not doubled into "Bearer Bearer <token>".
+    headers = {"Authorization": "Bearer " + normalize(un_token)}
     response = get_with_retries(target, headers, payload)
     # Check if the request was successful before processing
     if response.status_code == 200:
@@ -217,7 +220,25 @@ def fetch_country_data(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("token", help="UN WPP API token")  # positional arg
+    # Optional so the token can arrive in UN_API_TOKEN instead.  Passing it
+    # on the command line means an unquoted value is split on whitespace by
+    # the shell, which is how a token carrying a "Bearer " prefix reached
+    # argparse as two arguments and stopped the scheduled update.
+    parser.add_argument(
+        "token",
+        nargs="?",
+        default=os.environ.get("UN_API_TOKEN", ""),
+        help=(
+            "UN WPP API token; defaults to the UN_API_TOKEN environment "
+            "variable"
+        ),
+    )
+    un_token = normalize(parser.parse_args().token)
+    if not un_token:
+        parser.error(
+            "no UN WPP API token given. Pass one as an argument or set "
+            "UN_API_TOKEN."
+        )
 
-    fetch_country_data(un_token=parser.parse_args().token)
+    fetch_country_data(un_token=un_token)
     print("Data fetched successfully. See output in the 'Data' directory.")

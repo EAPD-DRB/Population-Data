@@ -16,10 +16,22 @@ import json
 import os
 import sys
 
+# This step runs before the conda environment exists, so it cannot import
+# fetch_un_data.py (which needs pandas).  src/un_token.py is standard
+# library only and is the single definition both of them share.
+sys.path.insert(
+    0,
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "..", "..", "src"
+    ),
+)
+from un_token import normalize  # noqa: E402
+
 WARN_WITHIN_DAYS = 30
 REQUEST_HELP = (
-    "Request a new token from population@un.org with the subject "
-    "'Data Portal Token Request', then update the UN_API_TOKEN secret."
+    "Generate a new token at "
+    "https://population.un.org/dataportalapi/index.html (the green "
+    "'Generate Token' button), then update the UN_API_TOKEN secret."
 )
 
 
@@ -34,8 +46,7 @@ def token_expiry(token):
         expires (datetime): expiry date of the token, or None if the
             token is not a JWT or carries no expiry
     """
-    if token.lower().startswith("bearer "):
-        token = token[7:].strip()
+    token = normalize(token)
     parts = token.split(".")
     if len(parts) != 3:
         return None
@@ -53,7 +64,7 @@ def token_expiry(token):
 
 
 def main():
-    token = os.environ.get("UN_API_TOKEN", "").strip()
+    token = normalize(os.environ.get("UN_API_TOKEN", ""))
     if not token:
         print("::error::UN_API_TOKEN is empty or not set. " + REQUEST_HELP)
         return 1

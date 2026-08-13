@@ -20,5 +20,6 @@ python fetch_un_data.py <your_token_here>
 
 Note that you will just enter the value of the token and not also `Bearer '.
 
-If you do not have a token, please contact the United Nations World Populations Prospect team to request one.  The token is free and is required to access the data.
-You can request the token by sending an email to population [at] un [.org] with the subject 'Data Portal Token Request'
+If you do not have a token, you can generate one yourself at [the UN Data Portal API page](https://population.un.org/dataportalapi/index.html) by clicking the green 'Generate Token' button in the top right corner.  The token is free and is required to access the data.  It used to be issued by email on request, which is no longer necessary.
+
+Tokens expire after a year.  The scheduled update in this repository reads its token from the `UN_API_TOKEN` repository secret and checks the expiry date before each run, so an expired token fails the run immediately instead of quietly leaving the data stale.
