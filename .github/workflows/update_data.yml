@@ -42,11 +42,17 @@ jobs:
           python-version: 3.11
           auto-activate-base: false
 
+      # The token goes in the environment rather than on the command line.
+      # An unquoted ${{ }} is split on whitespace by the shell, so a token
+      # carrying a "Bearer " prefix arrived as two arguments and the run
+      # failed with "unrecognized arguments".
       - name: Run python script
         working-directory: ./src
         shell: bash -l {0}
+        env:
+          UN_API_TOKEN: ${{ secrets.UN_API_TOKEN }}
         run: |
-          python fetch_un_data.py ${{ secrets.UN_API_TOKEN }}
+          python fetch_un_data.py
 
       - name: Check for changes
         id: verify-changed-files
