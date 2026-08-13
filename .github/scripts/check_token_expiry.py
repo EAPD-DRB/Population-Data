@@ -18,8 +18,9 @@ import sys
 
 WARN_WITHIN_DAYS = 30
 REQUEST_HELP = (
-    "Request a new token from population@un.org with the subject "
-    "'Data Portal Token Request', then update the UN_API_TOKEN secret."
+    "Generate a new token at "
+    "https://population.un.org/dataportalapi/index.html (the green "
+    "'Generate Token' button), then update the UN_API_TOKEN secret."
 )
 
 
